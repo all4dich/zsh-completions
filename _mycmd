@@ -1,0 +1,22 @@
+#compdef mycmd
+#_alternative \
+#  "directories:user directory:($userdirs)" \
+#  'options:comma-separated opt: _values -s , letter a b c'
+#_arguments '-f[input file]:filename:_files' 
+#_arguments '--premirror=file\:\//[Pre mirror ]:filename:_files' 
+#_arguments '-s[sort output]' '1:first arg:_net_interfaces' '::optional arg:_files' ':next arg:(a b c)'
+_arguments '-m[music file]:musicfile:->files' '-f[flags]:flag:->flags'
+case "$state" in
+    files)
+        local -a music_files
+        music_files=( Music/**/*.{mp3,wav,flac,ogg} )
+        _multi_parts / music_files
+        ;;
+    flags)
+        #_values -s , 'flags' a b c d e
+	#array1=_files
+	platforms="beehive gld ddd"
+	_sep_parts '(=file)' :/// '(starfish)' / '(starfish webos)' / '('$platforms')'
+	#
+        ;;
+esac
