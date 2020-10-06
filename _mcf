@@ -1,0 +1,49 @@
+#compdef mcf
+
+_mcf() {
+    local state
+    _arguments ':supported chips:->chips' '-b[bitbake thread]:BB_NUMBER_THREADS:->bb_threads' \
+    '-p[parallel thread]:PARALLEL_MAKE:->parallel_threads' \
+    '--enable-generate-mirror-tarballs[ generate tarballs suitable for mirroring (default: False)]' \
+    '--premirror[set premirror to specified URL (default: None)]:PREMIRROR:->premirror' \
+    '--sstatemirror[set sstatemirror to specified URL, repeat this option if you want multiple sstate mirrors (default: None)]:SSTATEMIRROR:->sstatemirror' 
+    os_type=${OSTYPE}
+    if  [[ "$OSTYPE" == "linux-gnu"* ]]; then 
+        # Linux
+        number_of_cores=`nproc` 
+    elif  [[ "$OSTYPE" == "darwin"* ]]; then 
+        # MacOS
+        number_of_cores=`sysctl hw.logicalcpu|awk '{print $NF}'` 
+    fi
+
+    number_of_cores_half=$( expr $number_of_cores / 2 )
+    mirror_top="/starfish"
+    case "$state" in
+        chips)
+            #chip_names=$( cat 'weboslayers.py'|tr ']' ' ' |grep ^Machines|awk -F\[ '{print $2}'|tr '\n' ', ' )
+            chip_names=$( cat 'weboslayers.py'|grep Machines|sed "s/[=+,']//g"|sed 's/Machines//g'|sed 's/\[//g'|sed 's/\]//g'|sort )
+            _sep_parts '('$chip_names')'
+            ;;
+        bb_threads)
+            _sep_parts '('$number_of_cores_half' '$number_of_cores')'
+            ;;
+        parallel_threads)
+            _sep_parts '('$number_of_cores_half' '$number_of_cores')'
+            ;;
+        premirror)
+            if [ -d $mirror_top ]; then
+                downloads_dirs="/starfish/poky/downloads /starfish/starfish/master/downloads /starfish/starfish/acadia/downloads /starfish/starfish/afro/downloads /starfish/starfish/agate/downloads /starfish/starfish/angeles/downloads /starfish/starfish/arches/downloads /starfish/starfish/beehive/downloads /starfish/starfish/dreadlocks/downloads /starfish/starfish/gld/downloads /starfish/starfish/jcl/downloads /starfish/downloads /starfish/downloads/starfish/downloads /starfish/webos/master/downloads"
+               	_sep_parts '(file)' :// '('$downloads_dirs')'
+            fi
+            ;;
+        sstatemirror)
+            if [ -d $mirror_top ]; then
+                sstate_dirs="/starfish/poky/sstate-cache /starfish/starfish/master/sstate-cache /starfish/starfish/acadia/sstate-cache /starfish/starfish/afro/sstate-cache /starfish/starfish/agate/sstate-cache /starfish/starfish/angeles/sstate-cache /starfish/starfish/arches/sstate-cache /starfish/starfish/beehive/sstate-cache /starfish/starfish/dreadlocks/sstate-cache /starfish/starfish/gld/sstate-cache /starfish/starfish/jcl/sstate-cache /starfish/sstate-cache /starfish/sstate-cache/starfish/sstate-cache /starfish/webos/master/sstate-cache"
+               	_sep_parts '(file)' :// '('$sstate_dirs')'
+            fi
+            ;;
+
+
+    esac
+}
+compdef _mcf mcf
